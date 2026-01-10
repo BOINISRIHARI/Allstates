@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>E-Advocate | State Intelligence</title>
+<style>
+:root{
+  --bg-main:#f5f7fb;
+  --bg-card:#ffffff;
+  --primary:#2563eb;
+  --text-main:#0f172a;
+  --text-muted:#64748b;
+  --border:#e5e7eb;
+  --radius:14px;
+  --shadow:0 12px 30px rgba(15,23,42,.08);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  font-family:Inter,system-ui,Arial,sans-serif;
+  background:var(--bg-main);
+  color:var(--text-main);
+}
+.content{
+  padding:28px;
+  display:flex;
+  flex-direction:column;
+  gap:24px;
+  max-width:1400px;
+  margin:0 auto;
+}
+.top-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:24px;
+}
+.card{
+  background:var(--bg-card);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  padding:24px;
+  display:flex;
+  flex-direction:column;
+}
+.map-card{min-height:480px;}
+.map-card img{
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  border-radius:10px;
+}
+.state-preview{
+  width:100%;
+  height:480px;
+  object-fit:contain;
+  border-radius:10px;
+  margin-top:16px;
+}
+
+/* Top controls */
+.top-controls {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:20px;
+  gap:20px;
+}
+
+/* Bottom */
+.bottom-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:24px;
+}
+.grid-box {
+  display:flex;
+  flex-direction:column;
+}
+.grid-box h3{
+  margin-bottom:12px;
+  font-size:16px;
+}
+.control-row {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:16px;
+}
+#districtSelect {
+  padding:12px 16px;
+  border-radius:10px;
+  border:1px solid var(--border);
+  background:#f9fafb;
+  width:260px;
+}
+.grid-list{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(140px,1fr));
+  gap:10px;
+  flex:1;
+}
+.grid-item{
+  padding:12px;
+  border-radius:10px;
+  background:#f1f5f9;
+  font-size:13px;
+  text-align:center;
+}
+
+/* Multi-select Common Styles */
+.multi-select{
+  position:relative;
+  width:280px;
+  font-size:14px;
+}
+.select-box{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:12px 14px;
+  border:1px solid var(--border);
+  border-radius:10px;
+  background:#f9fafb;
+  cursor:pointer;
+  min-height:48px;
+}
+.select-box span{
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.select-box i{
+  font-size:12px;
+  transition:transform .2s ease;
+}
+.dropdown{
+  position:absolute;
+  top:110%;
+  left:0;
+  width:100%;
+  background:#fff;
+  border:1px solid var(--border);
+  border-radius:10px;
+  box-shadow:var(--shadow);
+  padding:8px 0;
+  max-height:300px;
+  overflow:auto;
+  display:none;
+  z-index:20;
+}
+.multi-select.active .dropdown{display:block;}
+.multi-select.active .select-box i{transform:rotate(180deg);}
+.dropdown-search{
+  width:calc(100% - 16px);
+  margin:8px;
+  padding:8px 10px;
+  border-radius:8px;
+  border:1px solid var(--border);
+  font-size:13px;
+}
+.dropdown label{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:8px 14px;
+  font-size:14px;
+  cursor:pointer;
+}
+.dropdown label:hover{background:#f1f5f9;}
+.dropdown input[type="checkbox"]{accent-color:var(--primary);}
+
+@media(max-width:900px){
+  .top-grid,.bottom-grid{grid-template-columns:1fr;}
+  .top-controls{flex-direction:column; align-items:stretch;}
+  .multi-select{width:100%;}
+}
+</style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+<main class="content">
+  <!-- Top Section -->
+  <div class="top-grid">
+    <div class="card map-card">
+      <img src="/India-States-Map.png" alt="India Map">
+    </div>
+    <div class="card">
+      <div class="top-controls">
+        <div class="multi-select" id="languageMulti">
+          <div class="select-box">
+            <span>Select Language</span>
+            <i class="fa fa-chevron-down"></i>
+          </div>
+          <div class="dropdown">
+            <input class="dropdown-search" placeholder="Search language">
+            <label><input type="checkbox"> English</label>
+            <label><input type="checkbox"> Hindi</label>
+            <label><input type="checkbox"> Telugu</label>
+            <label><input type="checkbox"> Tamil</label>
+            <label><input type="checkbox"> Kannada</label>
+          </div>
+        </div>
+
+        <!-- NEW: Multi-select for States -->
+        <div class="multi-select" id="stateMulti">
+          <div class="select-box">
+            <span>Select State(s)</span>
+            <i class="fa fa-chevron-down"></i>
+          </div>
+          <div class="dropdown">
+            <input class="dropdown-search" placeholder="Search state">
+            <label><input type="checkbox" value="Andhra Pradesh"> Andhra Pradesh</label>
+            <label><input type="checkbox" value="Arunachal Pradesh"> Arunachal Pradesh</label>
+            <label><input type="checkbox" value="Assam"> Assam</label>
+            <label><input type="checkbox" value="Bihar"> Bihar</label>
+            <label><input type="checkbox" value="Chhattisgarh"> Chhattisgarh</label>
+            <label><input type="checkbox" value="Goa"> Goa</label>
+            <label><input type="checkbox" value="Gujarat"> Gujarat</label>
+            <label><input type="checkbox" value="Haryana"> Haryana</label>
+            <label><input type="checkbox" value="Himachal Pradesh"> Himachal Pradesh</label>
+            <label><input type="checkbox" value="Jharkhand"> Jharkhand</label>
+            <label><input type="checkbox" value="Karnataka"> Karnataka</label>
+            <label><input type="checkbox" value="Kerala"> Kerala</label>
+            <label><input type="checkbox" value="Madhya Pradesh"> Madhya Pradesh</label>
+            <label><input type="checkbox" value="Maharashtra"> Maharashtra</label>
+            <label><input type="checkbox" value="Manipur"> Manipur</label>
+            <label><input type="checkbox" value="Meghalaya"> Meghalaya</label>
+            <label><input type="checkbox" value="Mizoram"> Mizoram</label>
+            <label><input type="checkbox" value="Nagaland"> Nagaland</label>
+            <label><input type="checkbox" value="Odisha"> Odisha</label>
+            <label><input type="checkbox" value="Punjab"> Punjab</label>
+            <label><input type="checkbox" value="Rajasthan"> Rajasthan</label>
+            <label><input type="checkbox" value="Sikkim"> Sikkim</label>
+            <label><input type="checkbox" value="Tamil Nadu"> Tamil Nadu</label>
+            <label><input type="checkbox" value="Telangana"> Telangana</label>
+            <label><input type="checkbox" value="Tripura"> Tripura</label>
+            <label><input type="checkbox" value="Uttar Pradesh"> Uttar Pradesh</label>
+            <label><input type="checkbox" value="Uttarakhand"> Uttarakhand</label>
+            <label><input type="checkbox" value="West Bengal"> West Bengal</label>
+            <label><input type="checkbox" value="Andaman and Nicobar Islands"> Andaman and Nicobar Islands</label>
+            <label><input type="checkbox" value="Chandigarh"> Chandigarh</label>
+            <label><input type="checkbox" value="Dadra and Nagar Haveli and Daman and Diu"> Dadra and Nagar Haveli and Daman and Diu</label>
+            <label><input type="checkbox" value="Delhi"> Delhi</label>
+            <label><input type="checkbox" value="Jammu and Kashmir"> Jammu and Kashmir</label>
+            <label><input type="checkbox" value="Ladakh"> Ladakh</label>
+            <label><input type="checkbox" value="Lakshadweep"> Lakshadweep</label>
+            <label><input type="checkbox" value="Puducherry"> Puducherry</label>
+          </div>
+        </div>
+      </div>
+      <img id="statePreview" class="state-preview" src="/india states.jpeg" alt="State Preview">
+    </div>
+  </div>
+
+  <!-- Bottom Section -->
+  <div class="bottom-grid">
+    <div class="card grid-box">
+      <div class="control-row">
+        <h3>Districts</h3>
+        <select id="districtSelect">
+          <option value="">Filter by District (optional)</option>
+        </select>
+      </div>
+      <div id="districtGrid" class="grid-list"></div>
+    </div>
+    <div class="card grid-box">
+      <div class="control-row">
+        <h3>Cities</h3>
+        <div class="multi-select" id="cityMulti">
+          <div class="select-box">
+            <span>Select Cities (Multiple)</span>
+            <i class="fa fa-chevron-down"></i>
+          </div>
+          <div class="dropdown">
+            <input class="dropdown-search" placeholder="Search city">
+            <!-- Cities populated dynamically -->
+          </div>
+        </div>
+      </div>
+      <div id="cityGrid" class="grid-list"></div>
+    </div>
+  </div>
+</main>
+
+<script>
+// Your full data object (same as before)
+const data = { /* Paste your entire data object here */ };
+
+// State images mapping
+const stateImages = { /* Paste your stateImages object here */ };
+
+const districtGrid = document.getElementById("districtGrid");
+const cityGrid = document.getElementById("cityGrid");
+const districtSelect = document.getElementById("districtSelect");
+const cityDropdown = document.querySelector("#cityMulti .dropdown");
+const preview = document.getElementById("statePreview");
+
+// Get all state checkboxes
+const stateCheckboxes = document.querySelectorAll('#stateMulti input[type="checkbox"]');
+
+// Update displayed text when selection changes
+function updateStateSelectText() {
+  const checked = Array.from(stateCheckboxes).filter(cb => cb.checked);
+  const box = document.querySelector('#stateMulti .select-box span');
+  if (checked.length === 0) {
+    box.textContent = "Select State(s)";
+  } else if (checked.length === 1) {
+    box.textContent = checked[0].value;
+  } else {
+    box.textContent = `${checked.length} States Selected`;
+  }
+}
+
+// Populate districts and cities based on selected states
+function updateGrids() {
+  const selectedStates = Array.from(stateCheckboxes)
+    .filter(cb => cb.checked)
+    .map(cb => cb.value);
+
+  districtGrid.innerHTML = "";
+  cityGrid.innerHTML = "";
+  cityDropdown.innerHTML = '<input class="dropdown-search" placeholder="Search city">';
+  districtSelect.innerHTML = '<option value="">Filter by District (optional)</option>';
+
+  if (selectedStates.length === 0) {
+    preview.src = "/india states.jpeg";
+    return;
+  }
+
+  // If multiple states, show default India image
+  if (selectedStates.length > 1) {
+    preview.src = "/india states.jpeg";
+  } else {
+    preview.src = stateImages[selectedStates[0]] || "/india states.jpeg";
+  }
+
+  const allDistricts = new Set();
+  const districtToState = {}; // for later city filtering
+
+  selectedStates.forEach(state => {
+    Object.keys(data[state] || {}).forEach(district => {
+      allDistricts.add(district);
+      districtToState[district] = state;
+    });
+  });
+
+  // Populate district grid and filter dropdown
+  [...allDistricts].sort().forEach(district => {
+    districtGrid.innerHTML += `<div class="grid-item">${district}</div>`;
+    districtSelect.innerHTML += `<option value="${district}">${district}</option>`;
+  });
+
+  // Populate all cities initially
+  updateCities();
+}
+
+// Update cities based on district filter (if any)
+function updateCities() {
+  const selectedDistrict = districtSelect.value;
+  cityGrid.innerHTML = "";
+  cityDropdown.innerHTML = '<input class="dropdown-search" placeholder="Search city">';
+
+  const selectedStates = Array.from(stateCheckboxes)
+    .filter(cb => cb.checked)
+    .map(cb => cb.value);
+
+  selectedStates.forEach(state => {
+    Object.entries(data[state] || {}).forEach(([district, cities]) => {
+      if (selectedDistrict && district !== selectedDistrict) return;
+
+      cities.forEach(city => {
+        cityGrid.innerHTML += `<div class="grid-item">${city}</div>`;
+        cityDropdown.innerHTML += `<label><input type="checkbox"> ${city}</label>`;
+      });
+    });
+  });
+}
+
+// Event Listeners
+stateCheckboxes.forEach(cb => {
+  cb.addEventListener("change", () => {
+    updateStateSelectText();
+    updateGrids();
+  });
+});
+
+districtSelect.addEventListener("change", updateCities);
+
+// Multi-select dropdown toggle
+document.querySelectorAll(".select-box").forEach(box => {
+  box.addEventListener("click", function(e) {
+    e.stopPropagation();
+    this.parentElement.classList.toggle("active");
+  });
+});
+
+// Close dropdown when clicking outside
+document.addEventListener("click", () => {
+  document.querySelectorAll(".multi-select").forEach(ms => ms.classList.remove("active"));
+});
+
+// Search functionality inside dropdowns
+document.querySelectorAll(".dropdown-search").forEach(searchInput => {
+  searchInput.addEventListener("input", function() {
+    const filter = this.value.toLowerCase();
+    const labels = this.closest(".dropdown").querySelectorAll("label");
+    labels.forEach(label => {
+      const text = label.textContent.toLowerCase();
+      label.style.display = text.includes(filter) ? "flex" : "none";
+    });
+  });
+});
+
+updateStateSelectText(); // Initial text
+</script>
+</body>
+</html>
